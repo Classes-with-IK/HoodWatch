@@ -3,9 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 
 import { apiFetch } from "../lib/api";
+import { useAuth } from "../auth/AuthContext";
 
 function Register() {
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     name: "",
@@ -40,7 +42,7 @@ function Register() {
     setLoading(true);
 
     try {
-      await apiFetch("/auth/register", {
+      const response = await apiFetch("/auth/register", {
         method: "POST",
         body: JSON.stringify({
           name: form.name,
@@ -52,7 +54,18 @@ function Register() {
         }),
       });
 
-      navigate("/login");
+      const userData = response.user ?? response.data?.user ?? response.data;
+      const token =
+        response.token ?? response.accessToken ?? response.jwt ?? response.data?.token;
+
+      if (userData && token) {
+        login(userData, token);
+        navigate("/dashboard");
+      } else {
+        // Registration succeeded but didn't hand back a session — fall
+        // back to asking them to sign in explicitly.
+        navigate("/login");
+      }
     } catch (error) {
       setError(error.message || "Unable to create your account.");
     } finally {

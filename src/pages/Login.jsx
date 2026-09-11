@@ -7,7 +7,7 @@ import { useAuth } from "../auth/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { login, sessionExpired, clearSessionExpired } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -24,6 +24,8 @@ function Login() {
       ...current,
       [name]: value,
     }));
+
+    if (sessionExpired) clearSessionExpired();
   }
 
   async function handleSubmit(event) {
@@ -44,7 +46,11 @@ function Login() {
         body: JSON.stringify(form),
       });
 
-      setUser(response.user);
+      const userData = response.user ?? response.data?.user ?? response.data;
+      const token =
+        response.token ?? response.accessToken ?? response.jwt ?? response.data?.token;
+
+      login(userData, token);
 
       navigate("/dashboard");
     } catch (error) {
@@ -78,6 +84,12 @@ function Login() {
           {error && (
             <div className="mb-5 rounded-lg border border-border bg-critical-soft p-3 text-sm text-critical">
               {error}
+            </div>
+          )}
+
+          {sessionExpired && !error && (
+            <div className="mb-5 rounded-lg border border-border bg-warning-soft p-3 text-sm text-warning">
+              Your session has ended. Please sign in again.
             </div>
           )}
 
