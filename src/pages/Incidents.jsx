@@ -39,7 +39,12 @@ function Incidents() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState(searchParams.get("search") ?? "");
-  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [filters, setFilters] = useState({
+    status: searchParams.get("status") ?? "",
+    category: searchParams.get("category") ?? "",
+    priority: searchParams.get("priority") ?? "",
+    zone: searchParams.get("zone") ?? "",
+  });
   const [showFilters, setShowFilters] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 

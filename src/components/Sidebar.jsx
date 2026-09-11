@@ -5,6 +5,7 @@ import {
   Footprints,
   Home,
   LogOut,
+  Radar,
   Settings as SettingsIcon,
   ShieldAlert,
   User,
@@ -73,6 +74,22 @@ function Sidebar({ collapsible = false }) {
               </NavLink>
             );
           })}
+
+          {user?.role === "admin" && (
+            <NavLink
+              to="/admin"
+              className={({ isActive }) =>
+                `flex items-center gap-3 rounded-lg px-2.5 py-2.5 text-sm font-medium transition ${
+                  isActive
+                    ? "bg-ink text-white"
+                    : "text-muted hover:bg-bg hover:text-primary"
+                }`
+              }
+            >
+              <Radar size={18} strokeWidth={1.8} className="shrink-0" />
+              <span className={labelClass}>Control room</span>
+            </NavLink>
+          )}
         </div>
 
         <div className="my-6 border-t border-border" />
