@@ -10,23 +10,21 @@ function Layout() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="flex min-h-screen">
-        <div className="hidden lg:block">
-          <Sidebar />
-        </div>
+      <div className="hidden lg:block">
+        <Sidebar collapsible />
+      </div>
 
-        <MobileSidebar
-          isOpen={isMobileMenuOpen}
-          onClose={() => setIsMobileMenuOpen(false)}
-        />
+      <MobileSidebar
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
+      />
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
+      <div className="flex min-h-screen flex-col lg:pl-[76px]">
+        <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
 
-          <main className="flex-1">
-            <Outlet />
-          </main>
-        </div>
+        <main className="flex-1">
+          <Outlet />
+        </main>
       </div>
     </div>
   );
