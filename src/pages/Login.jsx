@@ -79,7 +79,7 @@ function Login() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-border bg-white p-6 shadow-sm"
+          className="rounded-2xl border border-border bg-surface p-6 shadow-card"
         >
           {error && (
             <div className="mb-5 rounded-lg border border-border bg-critical-soft p-3 text-sm text-critical">
@@ -108,7 +108,7 @@ function Login() {
               value={form.email}
               onChange={handleChange}
               placeholder="you@example.com"
-              className="h-11 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none transition focus:border-primary"
+              className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary"
               required
             />
           </div>
@@ -128,7 +128,7 @@ function Login() {
               value={form.password}
               onChange={handleChange}
               placeholder="Enter your password"
-              className="h-11 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none transition focus:border-primary"
+              className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary"
               required
             />
           </div>

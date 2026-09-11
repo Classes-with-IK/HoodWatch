@@ -92,7 +92,7 @@ function Register() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-2xl border border-border bg-white p-6 shadow-sm"
+          className="rounded-2xl border border-border bg-surface p-6 shadow-card"
         >
           {error && (
             <div className="mb-5 rounded-lg border border-border bg-critical-soft p-3 text-sm text-critical">
@@ -116,7 +116,7 @@ function Register() {
                 value={form.name}
                 onChange={handleChange}
                 placeholder="Enter your full name"
-                className="h-11 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none transition focus:border-primary"
+                className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary"
                 required
               />
             </div>
@@ -136,7 +136,7 @@ function Register() {
                 value={form.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className="h-11 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none transition focus:border-primary"
+                className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary"
                 required
               />
             </div>
@@ -156,7 +156,7 @@ function Register() {
                 value={form.password}
                 onChange={handleChange}
                 placeholder="Create a password"
-                className="h-11 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none transition focus:border-primary"
+                className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary"
                 required
               />
             </div>
@@ -176,7 +176,7 @@ function Register() {
                 value={form.zone}
                 onChange={handleChange}
                 placeholder="e.g. Oak Ridge"
-                className="h-11 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none transition focus:border-primary"
+                className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary"
               />
             </div>
 
@@ -198,7 +198,7 @@ function Register() {
                 value={form.phone}
                 onChange={handleChange}
                 placeholder="080..."
-                className="h-11 w-full rounded-lg border border-border bg-white px-3 text-sm outline-none transition focus:border-primary"
+                className="h-11 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none transition focus:border-primary"
               />
             </div>
           </div>

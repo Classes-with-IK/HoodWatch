@@ -150,7 +150,7 @@ function Patrols() {
       {isOfficer && !activeShift && (
         <form
           onSubmit={handleStart}
-          className="mt-6 rounded-2xl border border-border bg-surface p-6"
+          className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card"
         >
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent-soft text-primary">
@@ -310,7 +310,7 @@ function Patrols() {
               {pastShifts.map((patrol) => (
                 <div
                   key={patrol.id}
-                  className="rounded-xl border border-border bg-surface p-5"
+                  className="rounded-xl border border-border bg-surface p-5 shadow-card"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>

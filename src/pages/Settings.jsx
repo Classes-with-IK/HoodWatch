@@ -21,7 +21,7 @@ function Settings() {
         </h1>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
+      <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card">
         <h2 className="text-sm font-semibold text-ink">Account details</h2>
 
         <div className="mt-3 space-y-2.5 text-sm">
@@ -44,7 +44,7 @@ function Settings() {
         </p>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
+      <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card">
         <h2 className="text-sm font-semibold text-ink">Session</h2>
 
         <p className="mt-1 text-sm text-muted">

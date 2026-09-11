@@ -16,7 +16,7 @@ function AlertCard({ alert }) {
 
   return (
     <div
-      className={`rounded-xl border bg-surface p-5 ${
+      className={`rounded-xl border bg-surface p-5 shadow-card transition hover:shadow-card-hover ${
         SEVERITY_BORDER[alert.severity] ?? "border-border"
       } ${isEmergency ? "ring-1 ring-emergency/20" : ""} ${
         isExpired ? "opacity-60" : ""

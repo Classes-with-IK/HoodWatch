@@ -20,7 +20,7 @@ function IncidentCard({ incident }) {
   return (
     <Link
       to={`/incidents/${incident.id}`}
-      className="block rounded-xl border border-border bg-surface p-5 transition hover:border-primary/40 hover:shadow-sm"
+      className="block rounded-xl border border-border bg-surface p-5 shadow-card transition hover:border-primary/40 hover:shadow-card-hover"
     >
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">

@@ -232,7 +232,7 @@ function IncidentDetail() {
         Back to incidents
       </Link>
 
-      <div className="mt-4 rounded-2xl border border-border bg-surface p-6">
+      <div className="mt-4 rounded-2xl border border-border bg-surface p-6 shadow-card">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="min-w-0">
             <h1 className="font-display text-xl font-semibold text-ink sm:text-2xl">
@@ -324,7 +324,7 @@ function IncidentDetail() {
       </div>
 
       {canManageStatus && (
-        <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
+        <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card">
           <h2 className="text-base font-semibold text-ink">Update status</h2>
           <p className="mt-1 text-sm text-muted">
             Visible only to patrol officers and admins.
@@ -375,7 +375,7 @@ function IncidentDetail() {
         </div>
       )}
 
-      <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
+      <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card">
         <h2 className="text-base font-semibold text-ink">
           Comments {incident.comments?.length ? `(${incident.comments.length})` : ""}
         </h2>

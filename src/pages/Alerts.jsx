@@ -139,7 +139,7 @@ function Alerts() {
       {showForm && canBroadcast && (
         <form
           onSubmit={handleBroadcast}
-          className="mt-6 rounded-2xl border border-border bg-surface p-6"
+          className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card"
         >
           <div className="flex items-center justify-between">
             <h2 className="text-base font-semibold text-ink">

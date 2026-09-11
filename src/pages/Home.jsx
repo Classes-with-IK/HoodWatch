@@ -158,7 +158,7 @@ function Home() {
             const Icon = card.icon;
 
             return (
-              <div key={card.label} className="rounded-xl border border-border bg-surface p-5">
+              <div key={card.label} className="rounded-xl border border-border bg-surface p-5 shadow-card">
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-sm text-muted">{card.label}</p>
@@ -177,7 +177,7 @@ function Home() {
         </div>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-xl border border-border bg-surface p-5 shadow-card">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-muted">Resolution rate</p>
               <CheckCircle size={20} className="text-primary" />
@@ -187,7 +187,7 @@ function Home() {
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-xl border border-border bg-surface p-5 shadow-card">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-muted">Active patrol shifts</p>
               <ShieldAlert size={20} className="text-primary" />
@@ -251,7 +251,7 @@ function Home() {
             const Icon = card.icon;
 
             return (
-              <div key={card.role} className="rounded-2xl border border-border bg-surface p-6">
+              <div key={card.role} className="rounded-2xl border border-border bg-surface p-6 shadow-card">
                 <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft text-primary">
                   <Icon size={20} />
                 </div>

@@ -72,7 +72,7 @@ function Profile() {
         </p>
       </div>
 
-      <div className="mt-6 rounded-2xl border border-border bg-surface p-6">
+      <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card">
         <div className="flex items-center gap-4">
           <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-primary text-lg font-semibold text-white">
             {initialsFromName(user.name)}
@@ -116,7 +116,7 @@ function Profile() {
 
       <form
         onSubmit={handleSubmit}
-        className="mt-6 rounded-2xl border border-border bg-surface p-6"
+        className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card"
       >
         <h2 className="text-base font-semibold text-ink">Edit details</h2>
         <p className="mt-1 text-sm text-muted">

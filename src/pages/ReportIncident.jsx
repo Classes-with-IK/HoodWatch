@@ -116,7 +116,7 @@ function ReportIncident() {
 
       <form
         onSubmit={handleSubmit}
-        className="mt-6 space-y-5 rounded-2xl border border-border bg-surface p-6"
+        className="mt-6 space-y-5 rounded-2xl border border-border bg-surface p-6 shadow-card"
       >
         {submitError && (
           <div className="rounded-lg border border-border bg-critical-soft p-3 text-sm text-critical">

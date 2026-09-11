@@ -162,7 +162,7 @@ function Dashboard() {
           return (
             <div
               key={card.label}
-              className="rounded-xl border border-border bg-surface p-5"
+              className="rounded-xl border border-border bg-surface p-5 shadow-card"
             >
               <div className="flex items-center justify-between">
                 <p className="text-sm font-medium text-muted">{card.label}</p>
@@ -225,7 +225,7 @@ function Dashboard() {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-xl border border-border bg-surface p-5 shadow-card">
             <div className="flex items-center gap-2">
               <Footprints size={16} className="text-primary" />
               <h3 className="text-sm font-semibold text-ink">
@@ -250,7 +250,7 @@ function Dashboard() {
             </Link>
           </div>
 
-          <div className="rounded-xl border border-border bg-surface p-5">
+          <div className="rounded-xl border border-border bg-surface p-5 shadow-card">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Bell size={16} className="text-primary" />
