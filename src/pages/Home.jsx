@@ -94,7 +94,47 @@ function Home() {
   ];
 
   return (
-    <div>
+    <div className="min-h-screen bg-bg">
+      <header className="border-b border-border bg-surface">
+        <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary font-display text-base font-semibold text-white">
+              H
+            </div>
+            <span className="font-display text-xl font-semibold tracking-tight text-primary">
+              HoodWatch
+            </span>
+          </Link>
+
+          <div className="flex items-center gap-3">
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark"
+              >
+                Go to dashboard
+                <ArrowRight size={15} />
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="inline-flex h-10 items-center rounded-lg px-4 text-sm font-semibold text-ink transition hover:text-primary"
+                >
+                  Sign in
+                </Link>
+
+                <Link
+                  to="/register"
+                  className="inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark"
+                >
+                  Sign up
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+      </header>
       {/* Hero */}
       <section className="border-b border-border bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
