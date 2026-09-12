@@ -57,7 +57,7 @@ function AdminLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-ink px-4 py-10">
+    <div className="min-h-screen bg-[#0b100e] px-4 py-10">
       <div className="mx-auto max-w-md">
         <Link
           to="/login"

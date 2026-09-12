@@ -81,7 +81,7 @@ function Sidebar({ collapsible = false }) {
               className={({ isActive }) =>
                 `flex items-center gap-3 rounded-lg px-2.5 py-2.5 text-sm font-medium transition ${
                   isActive
-                    ? "bg-ink text-white"
+                    ? "bg-primary text-white"
                     : "text-muted hover:bg-bg hover:text-primary"
                 }`
               }

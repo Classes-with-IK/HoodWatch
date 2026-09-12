@@ -283,7 +283,7 @@ function Patrols() {
             <button
               type="submit"
               disabled={ending}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-ink px-4 text-sm font-semibold text-white transition hover:bg-ink/90 disabled:cursor-not-allowed disabled:opacity-60"
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-lg bg-critical px-4 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <Square size={14} />
               {ending ? "Ending..." : "End patrol"}

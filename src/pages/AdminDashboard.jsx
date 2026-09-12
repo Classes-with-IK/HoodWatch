@@ -92,10 +92,10 @@ function AdminDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-ink/[0.02] p-4 sm:p-6">
+    <div className="min-h-screen bg-bg p-4 sm:p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-ink text-white">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white">
             <Radar size={20} />
           </div>
 
