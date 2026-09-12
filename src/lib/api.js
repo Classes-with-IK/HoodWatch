@@ -21,15 +21,6 @@ export function storeToken(token) {
     }
 }
 
-let unauthorizedHandler = null
-
-// Lets AuthContext register a callback that fires whenever any request
-// comes back unauthorized, so an expired/invalid session is handled in
-// exactly one place instead of in every page that calls apiFetch.
-export function onUnauthorized(handler) {
-    unauthorizedHandler = handler
-}
-
 export function extractUser(payload) {
     if (!payload || typeof payload !== "object") return null
 
@@ -137,23 +128,11 @@ export async function apiFetch(path, options = {}) {
     const body = hasJsonBody ? await response.json().catch(() => null) : null
 
     if (!response.ok) {
-        let message =
+        const message =
             body?.message ||
             body?.error ||
             body?.detail ||
             `Request failed with status ${response.status}`
-
-        // A 401 only means "your session has ended" if this request was
-        // actually carrying a session (a stored bearer token) that the
-        // server just rejected. A 401 on a request with no token attached
-        // is almost always a login/register attempt with the wrong
-        // credentials — that's a different problem, so leave the
-        // backend's real message alone and don't touch any session state.
-        if (response.status === 401 && token) {
-            message = "Your session has ended. Please sign in again."
-            storeToken(null)
-            unauthorizedHandler?.()
-        }
 
         const error = new Error(message)
         error.status = response.status

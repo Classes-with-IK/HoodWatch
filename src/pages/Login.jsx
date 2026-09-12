@@ -7,7 +7,7 @@ import { useAuth } from "../auth/AuthContext";
 
 function Login() {
   const navigate = useNavigate();
-  const { login, sessionExpired, clearSessionExpired } = useAuth();
+  const { login } = useAuth();
 
   const [form, setForm] = useState({
     email: "",
@@ -24,8 +24,6 @@ function Login() {
       ...current,
       [name]: value,
     }));
-
-    if (sessionExpired) clearSessionExpired();
   }
 
   async function handleSubmit(event) {
@@ -83,12 +81,6 @@ function Login() {
           {error && (
             <div className="mb-5 rounded-lg border border-border bg-critical-soft p-3 text-sm text-critical">
               {error}
-            </div>
-          )}
-
-          {sessionExpired && !error && (
-            <div className="mb-5 rounded-lg border border-border bg-warning-soft p-3 text-sm text-warning">
-              Your session has ended. Please sign in again.
             </div>
           )}
 

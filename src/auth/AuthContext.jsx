@@ -1,21 +1,11 @@
-import { createContext, useCallback, useContext, useEffect, useState } from "react"
-import { apiFetch, getStoredToken, storeToken, onUnauthorized } from "../lib/api"
+import { createContext, useContext, useEffect, useState } from "react"
+import { apiFetch, getStoredToken, storeToken, extractUser } from "../lib/api"
 
 const AuthContext = createContext(null)
 
 export function AuthProvider({ children }) {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
-    const [sessionExpired, setSessionExpired] = useState(false)
-
-    const handleUnauthorized = useCallback(() => {
-        setUser(null)
-        setSessionExpired(true)
-    }, [])
-
-    useEffect(() => {
-        onUnauthorized(handleUnauthorized)
-    }, [handleUnauthorized])
 
     useEffect(() => {
         async function restoreSession() {
@@ -28,10 +18,13 @@ export function AuthProvider({ children }) {
 
             try {
                 const response = await apiFetch("/auth/me")
-                setUser(response.user ?? response.data?.user ?? response.data ?? null)
+                setUser(extractUser(response))
             } catch {
-                // onUnauthorized already clears the token on a 401; this
-                // catch just makes sure loading resolves either way.
+                // Whatever the reason (expired token, invalid token, the
+                // account no longer exists) — quietly treat this as
+                // logged out rather than surfacing a scary error on a
+                // page the person hasn't actually done anything on yet.
+                storeToken(null)
                 setUser(null)
             } finally {
                 setLoading(false)
@@ -44,12 +37,7 @@ export function AuthProvider({ children }) {
     // Called after a successful login/register response.
     function login(userData, token) {
         storeToken(token)
-        setSessionExpired(false)
         setUser(userData)
-    }
-
-    function clearSessionExpired() {
-        setSessionExpired(false)
     }
 
     async function logout() {
@@ -67,8 +55,6 @@ export function AuthProvider({ children }) {
         loading,
         login,
         logout,
-        sessionExpired,
-        clearSessionExpired,
     }
 
     return (
