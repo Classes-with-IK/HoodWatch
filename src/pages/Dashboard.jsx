@@ -49,7 +49,8 @@ function Dashboard() {
   useEffect(() => {
     async function loadIncidents() {
       try {
-        const zone = user?.zone;
+        // Admins oversee the whole community, not just their own zone.
+        const zone = user?.role === "admin" ? null : user?.zone;
         const path = zone ? `/incidents?zone=${encodeURIComponent(zone)}` : "/incidents";
         const response = await apiFetch(path);
 
@@ -62,12 +63,12 @@ function Dashboard() {
     }
 
     loadIncidents();
-  }, [user?.zone]);
+  }, [user?.zone, user?.role]);
 
   useEffect(() => {
     async function loadAlerts() {
       try {
-        const zone = user?.zone;
+        const zone = user?.role === "admin" ? null : user?.zone;
         const path = zone ? `/alerts?zone=${encodeURIComponent(zone)}` : "/alerts";
         const response = await apiFetch(path);
 
@@ -80,7 +81,7 @@ function Dashboard() {
     }
 
     loadAlerts();
-  }, [user?.zone]);
+  }, [user?.zone, user?.role]);
 
   const overview = stats?.overview;
   const topAlert = alerts.find((alert) => alert.severity === "emergency") ?? alerts[0];
@@ -109,7 +110,7 @@ function Dashboard() {
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="font-display text-sm font-medium text-primary">
-            {user?.zone || "Your community"}
+            {user?.role === "admin" ? "All zones" : user?.zone || "Your community"}
           </p>
 
           <h1 className="mt-1 font-display text-2xl font-semibold text-ink sm:text-3xl">
