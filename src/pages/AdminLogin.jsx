@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Radar, ArrowLeft } from "lucide-react";
 
-import { apiFetch } from "../lib/api";
+import { apiFetch, extractUser, extractToken } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 
 function AdminLogin() {
@@ -36,9 +36,8 @@ function AdminLogin() {
         body: JSON.stringify(form),
       });
 
-      const userData = response.user ?? response.data?.user ?? response.data;
-      const token =
-        response.token ?? response.accessToken ?? response.jwt ?? response.data?.token;
+      const userData = extractUser(response);
+      const token = extractToken(response);
 
       if (userData?.role !== "admin") {
         setError(
@@ -140,6 +139,13 @@ function AdminLogin() {
             {loading ? "Verifying..." : "Enter control room"}
           </button>
         </form>
+
+        <p className="mt-6 text-center text-xs text-white/40">
+          New admin?{" "}
+          <Link to="/admin/register" className="font-semibold text-white/70 hover:underline">
+            Create an account
+          </Link>
+        </p>
       </div>
     </div>
   );

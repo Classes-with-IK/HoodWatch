@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 
-import { apiFetch } from "../lib/api";
+import { apiFetch, extractUser, extractToken } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 
 function Register() {
@@ -54,9 +54,8 @@ function Register() {
         }),
       });
 
-      const userData = response.user ?? response.data?.user ?? response.data;
-      const token =
-        response.token ?? response.accessToken ?? response.jwt ?? response.data?.token;
+      const userData = extractUser(response);
+      const token = extractToken(response);
 
       if (userData && token) {
         login(userData, token);

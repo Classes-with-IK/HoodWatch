@@ -30,6 +30,65 @@ export function onUnauthorized(handler) {
     unauthorizedHandler = handler
 }
 
+export function extractUser(payload) {
+    if (!payload || typeof payload !== "object") return null
+
+    return payload.user ?? payload.data?.user ?? payload.data ?? null
+}
+
+// The API's docs promise a JWT comes back on register/login, but don't
+// specify the exact key it's returned under. Rather than guess one name
+// and silently break auth if it's wrong, check the common key names first
+// and fall back to scanning the payload for anything shaped like a JWT
+// (three dot-separated base64url segments).
+export function extractToken(payload) {
+    if (!payload || typeof payload !== "object") return null
+
+    const candidateKeys = [
+        "token",
+        "accessToken",
+        "access_token",
+        "jwt",
+        "authToken",
+        "auth_token",
+        "sessionToken",
+        "session_token",
+    ]
+
+    const sources = [payload, payload.data, payload.session, payload.auth]
+
+    for (const source of sources) {
+        if (!source || typeof source !== "object") continue
+
+        for (const key of candidateKeys) {
+            if (typeof source[key] === "string" && source[key].length > 0) {
+                return source[key]
+            }
+        }
+    }
+
+    const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/
+
+    function scan(value, depth = 0) {
+        if (depth > 3 || value == null) return null
+
+        if (typeof value === "string") {
+            return jwtPattern.test(value) ? value : null
+        }
+
+        if (typeof value === "object") {
+            for (const nested of Object.values(value)) {
+                const found = scan(nested, depth + 1)
+                if (found) return found
+            }
+        }
+
+        return null
+    }
+
+    return scan(payload)
+}
+
 export async function apiFetch(path, options = {}) {
     const token = getStoredToken()
 
