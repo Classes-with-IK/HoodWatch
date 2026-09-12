@@ -21,10 +21,10 @@ different domains (Netlify/Vercel vs. the API's own Vercel deployment).
 
 A single fetch wrapper (`src/lib/api.js`) reads the token from
 `localStorage` and attaches `Authorization: Bearer <token>` on every
-request. On any `401`, it clears the stored token and calls a registered
-handler so `AuthContext` can sign the user out — the raw backend error text
-never reaches the screen; the person just sees "Your session has ended.
-Please sign in again."
+request. A `401` is only ever treated as "your session expired" when the
+failing request actually carried a stored token — a `401` with no token
+attached (a login/register attempt) is a plain credentials error, and the
+backend's real message is shown as-is.
 
 Since the API's docs don't pin down the exact key the JWT comes back under,
 `extractToken()` checks common key names (`token`, `accessToken`, `jwt`,
@@ -60,17 +60,24 @@ start/checkpoint/end, the admin control room) only renders for the matching
 role — the API is still the source of truth and is expected to reject
 anything the frontend missed.
 
-## Admin control room
+## Registration and login
 
-Admins get a separate area from the resident/officer experience:
+Registration is shared: `/register` has a Resident / Patrol officer / Admin
+picker, and creates the account with whichever role is selected, routing
+into `/admin` or `/dashboard` accordingly.
 
+Login is split by audience:
+
+- **`/login`** — residents and patrol officers. Also links out to
+  `/admin/login` for admins.
 - **`/admin/login`** — a distinct sign-in screen (dark "control room"
   styling). It calls the same `POST /auth/login` endpoint — there's no
   separate backend auth flow for admins — but if the returned user's role
   isn't `admin`, the token is never stored and the person is told to use
   the main login instead.
-- **`/admin/register`** — a dedicated admin sign-up screen, same dark theme,
-  posts to `/auth/register` with `role: "admin"`.
+
+## Admin control room
+
 - **`/admin`** — live stats, a "needs attention" queue of freshly reported
   incidents, active patrol shifts, and the alert broadcast form. Guarded by
   `AdminRoute`, which redirects to `/admin/login` if signed out, or
@@ -126,10 +133,10 @@ npm run dev
       sign in/sign up, hero, live `/public/stats`, how-it-works, role
       breakdown
 - [x] Register, login, logout, session persistence via a stored bearer token
-- [x] Protected routing, plus a separate admin-only route/login
+- [x] Protected routing, plus a separate admin-only login and route
 - [x] Resident dashboard (zone alert banner, live stats, recent incidents)
 - [x] Admin control room — overview stats, needs-attention queue, active
-      patrols, alert broadcast, and a dedicated admin login/register
+      patrols, alert broadcast
 - [x] Incident feed — search, status/category/priority/zone filters
       (deep-linkable via URL params), loading/empty/error states
 - [x] Incident detail — status timeline, comments, upvote/confirm,
