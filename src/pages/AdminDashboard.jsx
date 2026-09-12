@@ -8,6 +8,8 @@ import {
   ArrowRight,
   Megaphone,
   X,
+  Eye,
+  XCircle,
 } from "lucide-react";
 
 import { apiFetch } from "../lib/api";
@@ -34,6 +36,10 @@ function AdminDashboard() {
   const [showForm, setShowForm] = useState(false);
   const [reloadKey, setReloadKey] = useState(0);
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [bulkAction, setBulkAction] = useState("");
+  const [bulkError, setBulkError] = useState("");
+
   useEffect(() => {
     async function loadStats() {
       try {
@@ -52,6 +58,7 @@ function AdminDashboard() {
   useEffect(() => {
     async function loadIncidents() {
       setIncidentsLoading(true);
+      setSelectedIds([]);
 
       try {
         const response = await apiFetch("/incidents?status=reported");
@@ -90,6 +97,48 @@ function AdminDashboard() {
     { label: "Active patrol shifts", value: overview?.activePatrolShifts ?? 0, icon: Footprints },
     { label: "Active alerts", value: overview?.activeSafetyAlerts ?? 0, icon: Bell },
   ];
+
+  const visibleIncidents = needsAttention.slice(0, 6);
+  const allVisibleSelected =
+    visibleIncidents.length > 0 &&
+    visibleIncidents.every((incident) => selectedIds.includes(incident.id));
+
+  function toggleSelected(id) {
+    setSelectedIds((current) =>
+      current.includes(id)
+        ? current.filter((entry) => entry !== id)
+        : [...current, id],
+    );
+  }
+
+  function toggleSelectAll() {
+    setSelectedIds(allVisibleSelected ? [] : visibleIncidents.map((incident) => incident.id));
+  }
+
+  async function handleBulkStatusUpdate(status) {
+    setBulkError("");
+    setBulkAction(status);
+
+    const results = await Promise.allSettled(
+      selectedIds.map((id) =>
+        apiFetch(`/incidents/${id}/status`, {
+          method: "PATCH",
+          body: JSON.stringify({ status }),
+        }),
+      ),
+    );
+
+    const failures = results.filter((result) => result.status === "rejected");
+
+    if (failures.length > 0) {
+      setBulkError(
+        `${failures.length} of ${selectedIds.length} update${selectedIds.length === 1 ? "" : "s"} failed.`,
+      );
+    }
+
+    setBulkAction("");
+    setReloadKey((key) => key + 1);
+  }
 
   return (
     <div className="min-h-screen bg-bg p-4 sm:p-6">
@@ -191,6 +240,50 @@ function AdminDashboard() {
             </Link>
           </div>
 
+          {visibleIncidents.length > 0 && (
+            <div className="mt-4 flex items-center gap-3">
+              <label className="flex items-center gap-2 text-xs font-medium text-muted">
+                <input
+                  type="checkbox"
+                  checked={allVisibleSelected}
+                  onChange={toggleSelectAll}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                Select all
+              </label>
+
+              {selectedIds.length > 0 && (
+                <div className="flex flex-1 flex-wrap items-center justify-end gap-2">
+                  <span className="text-xs text-muted">
+                    {selectedIds.length} selected
+                  </span>
+
+                  <button
+                    onClick={() => handleBulkStatusUpdate("under_review")}
+                    disabled={bulkAction !== ""}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-semibold text-ink transition hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Eye size={13} />
+                    {bulkAction === "under_review" ? "Updating..." : "Mark reviewing"}
+                  </button>
+
+                  <button
+                    onClick={() => handleBulkStatusUpdate("dismissed")}
+                    disabled={bulkAction !== ""}
+                    className="inline-flex h-8 items-center gap-1.5 rounded-lg border border-border px-2.5 text-xs font-semibold text-critical transition hover:border-critical disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <XCircle size={13} />
+                    {bulkAction === "dismissed" ? "Dismissing..." : "Dismiss"}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {bulkError && (
+            <p className="mt-2 text-xs text-critical">{bulkError}</p>
+          )}
+
           <div className="mt-4">
             {incidentsLoading ? (
               <LoadingState rows={3} />
@@ -202,13 +295,22 @@ function AdminDashboard() {
               />
             ) : (
               <div className="space-y-3">
-                {needsAttention.slice(0, 6).map((incident) => (
-                  <Link
+                {visibleIncidents.map((incident) => (
+                  <div
                     key={incident.id}
-                    to={`/incidents/${incident.id}`}
-                    className="block rounded-xl border border-border bg-surface p-4 shadow-card transition hover:border-primary/40 hover:shadow-card-hover"
+                    className="flex items-start gap-3 rounded-xl border border-border bg-surface p-4 shadow-card transition hover:border-primary/40 hover:shadow-card-hover"
                   >
-                    <div className="flex items-start justify-between gap-4">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(incident.id)}
+                      onChange={() => toggleSelected(incident.id)}
+                      className="mt-1 h-4 w-4 shrink-0 rounded border-border accent-primary"
+                    />
+
+                    <Link
+                      to={`/incidents/${incident.id}`}
+                      className="flex flex-1 items-start justify-between gap-4 min-w-0"
+                    >
                       <div className="min-w-0">
                         <p className="truncate text-sm font-semibold text-ink">
                           {incident.title}
@@ -223,8 +325,8 @@ function AdminDashboard() {
                         <PriorityBadge priority={incident.priority} />
                         <StatusBadge status={incident.status} />
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 ))}
               </div>
             )}
