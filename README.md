@@ -85,11 +85,23 @@ Login is split by audience:
   incidents, active patrol shifts, and the alert broadcast form. Guarded by
   `AdminRoute`, which redirects to `/admin/login` if signed out, or
   `/dashboard` if signed in as anything other than admin.
+- The needs-attention queue supports bulk triage: select multiple reports
+  and mark them "under review" or "dismissed" in one action.
+- The dashboard and its incident/alert widgets are **not** zone-scoped for
+  admins — residents and officers see their own zone by default, but an
+  admin sees the whole community, since oversight is the point.
 
 Signing in as an admin through the *regular* `/login` still works and lands
 on `/admin` directly. Patrol officers keep broadcasting alerts from the
 regular `/alerts` page — `AlertBroadcastForm` is shared between the two so
 that logic only exists once.
+
+Admin's sidebar "Home" points at `/admin` rather than the resident-style
+`/dashboard`, so there's one clear home per role instead of two competing
+ones. A small "Admin" badge shows next to the name in the header and the
+sidebar's account card as a reminder of which mode you're in while
+browsing the pages that are otherwise identical across roles (incidents,
+alerts, patrols, profile).
 
 ## Structure
 
