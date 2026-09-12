@@ -12,6 +12,20 @@
       rel="stylesheet"
     />
     <title>HoodWatch — Community safety, coordinated</title>
+    <script>
+      (function () {
+        try {
+          var stored = localStorage.getItem("hoodwatch_theme");
+          var isDark =
+            stored === "dark" ||
+            (!stored &&
+              window.matchMedia("(prefers-color-scheme: dark)").matches);
+          if (isDark) document.documentElement.classList.add("dark");
+        } catch (e) {
+          // localStorage unavailable — default to light, no crash.
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
