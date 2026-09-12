@@ -26,6 +26,14 @@ handler so `AuthContext` can sign the user out — the raw backend error text
 never reaches the screen; the person just sees "Your session has ended.
 Please sign in again."
 
+Since the API's docs don't pin down the exact key the JWT comes back under,
+`extractToken()` checks common key names (`token`, `accessToken`, `jwt`,
+etc.) across the top-level response and a few likely wrapper objects, then
+falls back to scanning the payload for anything shaped like a JWT
+(three dot-separated base64url segments). This is what register/login/admin
+login all use to pull the session out of whatever shape the response
+actually is.
+
 **Tradeoff worth knowing:** a token in `localStorage` is readable by any
 script running on the page, so it's more exposed to XSS than an httpOnly
 cookie would be. Reasonable for a portfolio project; a production app
@@ -61,6 +69,8 @@ Admins get a separate area from the resident/officer experience:
   separate backend auth flow for admins — but if the returned user's role
   isn't `admin`, the token is never stored and the person is told to use
   the main login instead.
+- **`/admin/register`** — a dedicated admin sign-up screen, same dark theme,
+  posts to `/auth/register` with `role: "admin"`.
 - **`/admin`** — live stats, a "needs attention" queue of freshly reported
   incidents, active patrol shifts, and the alert broadcast form. Guarded by
   `AdminRoute`, which redirects to `/admin/login` if signed out, or
@@ -112,17 +122,18 @@ npm run dev
 
 ## What's implemented
 
-- [x] Landing page — hero, live `/public/stats`, how-it-works, role
+- [x] Landing page — standalone (no app sidebar), just a logo and
+      sign in/sign up, hero, live `/public/stats`, how-it-works, role
       breakdown
 - [x] Register, login, logout, session persistence via a stored bearer token
 - [x] Protected routing, plus a separate admin-only route/login
 - [x] Resident dashboard (zone alert banner, live stats, recent incidents)
 - [x] Admin control room — overview stats, needs-attention queue, active
-      patrols, alert broadcast
+      patrols, alert broadcast, and a dedicated admin login/register
 - [x] Incident feed — search, status/category/priority/zone filters
       (deep-linkable via URL params), loading/empty/error states
 - [x] Incident detail — status timeline, comments, upvote/confirm,
-      ownership-safe delete
+      officer assignment for admins/officers, ownership-safe delete
 - [x] Report incident — controlled category/priority enums, validation
 - [x] Safety alerts — zone/severity filters, severity-distinct styling,
       expired-alert handling, admin/officer broadcast form
