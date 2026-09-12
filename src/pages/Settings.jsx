@@ -1,10 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { LogOut, ShieldCheck, Mail } from "lucide-react";
+import { LogOut, ShieldCheck, Mail, Sun, Moon } from "lucide-react";
 
 import { useAuth } from "../auth/AuthContext";
+import { useTheme } from "../theme/ThemeContext";
 
 function Settings() {
   const { user, logout } = useAuth();
+  const { theme, setTheme } = useTheme();
   const navigate = useNavigate();
 
   if (!user) return null;
@@ -42,6 +44,40 @@ function Settings() {
         <p className="mt-4 text-xs text-muted">
           To update your name, zone, or phone number, head to your profile.
         </p>
+      </div>
+
+      <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card">
+        <h2 className="text-sm font-semibold text-ink">Appearance</h2>
+
+        <p className="mt-1 text-sm text-muted">
+          Choose how HoodWatch looks on this device.
+        </p>
+
+        <div className="mt-4 grid grid-cols-2 gap-2">
+          <button
+            onClick={() => setTheme("light")}
+            className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
+              theme === "light"
+                ? "border-primary bg-accent-soft text-primary"
+                : "border-border text-muted hover:border-primary/40"
+            }`}
+          >
+            <Sun size={16} />
+            Light
+          </button>
+
+          <button
+            onClick={() => setTheme("dark")}
+            className={`flex items-center justify-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-semibold transition ${
+              theme === "dark"
+                ? "border-primary bg-accent-soft text-primary"
+                : "border-border text-muted hover:border-primary/40"
+            }`}
+          >
+            <Moon size={16} />
+            Dark
+          </button>
+        </div>
       </div>
 
       <div className="mt-6 rounded-2xl border border-border bg-surface p-6 shadow-card">

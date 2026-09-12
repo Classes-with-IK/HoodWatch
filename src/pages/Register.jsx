@@ -4,6 +4,7 @@ import { ShieldCheck, User, Footprints, Radar } from "lucide-react";
 
 import { apiFetch, extractUser, extractToken } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
+import ThemeToggle from "../components/ThemeToggle";
 
 const ROLE_OPTIONS = [
   { value: "resident", label: "Resident", icon: User },
@@ -84,6 +85,10 @@ function Register() {
   return (
     <div className="min-h-screen bg-bg px-4 py-10">
       <div className="mx-auto max-w-md">
+        <div className="mb-4 flex justify-end">
+          <ThemeToggle />
+        </div>
+
         <div className="mb-8 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary text-white">
             <ShieldCheck size={24} />

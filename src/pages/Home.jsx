@@ -17,6 +17,7 @@ import {
 
 import { apiFetch } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
+import ThemeToggle from "../components/ThemeToggle";
 
 const STEPS = [
   {
@@ -106,7 +107,9 @@ function Home() {
             </span>
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+
             {user ? (
               <Link
                 to="/dashboard"
@@ -309,7 +312,7 @@ function Home() {
 
       {/* Closing CTA */}
       {!user && (
-        <section className="border-t border-border bg-ink">
+        <section className="border-t border-border bg-[#15201c]">
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <div>
               <div className="flex items-center gap-2 text-white/70">
@@ -324,7 +327,7 @@ function Home() {
 
             <Link
               to="/register"
-              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-lg bg-white px-5 text-sm font-semibold text-ink transition hover:bg-white/90"
+              className="inline-flex h-11 shrink-0 items-center gap-2 rounded-lg bg-white px-5 text-sm font-semibold text-[#15201c] transition hover:bg-white/90"
             >
               Create your account
               <ArrowRight size={16} />

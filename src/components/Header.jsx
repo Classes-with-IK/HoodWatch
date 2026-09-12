@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../auth/AuthContext";
 import { initialsFromName } from "../lib/format";
+import ThemeToggle from "./ThemeToggle";
 
 function Header({ onMenuClick }) {
   const { user } = useAuth();
@@ -49,6 +50,8 @@ function Header({ onMenuClick }) {
       </form>
 
       <div className="flex items-center gap-3">
+        <ThemeToggle />
+
         {user && (
           <>
             <div className="hidden text-right sm:block">
