@@ -142,7 +142,7 @@ function AdminLogin() {
 
         <p className="mt-6 text-center text-xs text-white/40">
           New admin?{" "}
-          <Link to="/admin/register" className="font-semibold text-white/70 hover:underline">
+          <Link to="/register" className="font-semibold text-white/70 hover:underline">
             Create an account
           </Link>
         </p>

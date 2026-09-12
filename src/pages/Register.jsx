@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, User, Footprints, Radar } from "lucide-react";
 
 import { apiFetch, extractUser, extractToken } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
+
+const ROLE_OPTIONS = [
+  { value: "resident", label: "Resident", icon: User },
+  { value: "patrol_officer", label: "Patrol officer", icon: Footprints },
+  { value: "admin", label: "Admin", icon: Radar },
+];
 
 function Register() {
   const navigate = useNavigate();
@@ -13,6 +19,7 @@ function Register() {
     name: "",
     email: "",
     password: "",
+    role: "resident",
     zone: "",
     phone: "",
   });
@@ -48,7 +55,7 @@ function Register() {
           name: form.name,
           email: form.email,
           password: form.password,
-          role: "resident",
+          role: form.role,
           zone: form.zone || undefined,
           phone: form.phone || undefined,
         }),
@@ -57,16 +64,18 @@ function Register() {
       const userData = extractUser(response);
       const token = extractToken(response);
 
-      if (userData && token) {
+      if (userData) {
+        // Log them in even if we couldn't find a bearer token in the
+        // response — the server also sets an httpOnly session cookie on
+        // register, and every request already sends credentials, so the
+        // session can still work without one.
         login(userData, token);
-        navigate("/dashboard");
+        navigate(userData.role === "admin" ? "/admin" : "/dashboard");
       } else {
-        // Registration succeeded but didn't hand back a session — fall
-        // back to asking them to sign in explicitly.
         navigate("/login");
       }
-    } catch (error) {
-      setError(error.message || "Unable to create your account.");
+    } catch (err) {
+      setError(err.message || "Unable to create your account.");
     } finally {
       setLoading(false);
     }
@@ -85,7 +94,7 @@ function Register() {
           </h1>
 
           <p className="mt-2 text-sm text-muted">
-            Create your resident account to stay connected to your community.
+            Create your account to get started.
           </p>
         </div>
 
@@ -100,6 +109,37 @@ function Register() {
           )}
 
           <div className="space-y-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-ink">
+                I am a...
+              </label>
+
+              <div className="grid grid-cols-3 gap-2">
+                {ROLE_OPTIONS.map((option) => {
+                  const Icon = option.icon;
+                  const isActive = form.role === option.value;
+
+                  return (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() =>
+                        setForm((current) => ({ ...current, role: option.value }))
+                      }
+                      className={`flex flex-col items-center gap-1.5 rounded-lg border px-2 py-3 text-xs font-semibold transition ${
+                        isActive
+                          ? "border-primary bg-accent-soft text-primary"
+                          : "border-border text-muted hover:border-primary/40"
+                      }`}
+                    >
+                      <Icon size={17} />
+                      {option.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div>
               <label
                 htmlFor="name"
@@ -213,7 +253,7 @@ function Register() {
           <p className="mt-5 text-center text-sm text-muted">
             Already have an account?{" "}
             <Link
-              to="/login"
+              to={form.role === "admin" ? "/admin/login" : "/login"}
               className="font-semibold text-primary hover:underline"
             >
               Sign in
