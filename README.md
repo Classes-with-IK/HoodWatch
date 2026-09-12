@@ -21,10 +21,13 @@ different domains (Netlify/Vercel vs. the API's own Vercel deployment).
 
 A single fetch wrapper (`src/lib/api.js`) reads the token from
 `localStorage` and attaches `Authorization: Bearer <token>` on every
-request. A `401` is only ever treated as "your session expired" when the
-failing request actually carried a stored token — a `401` with no token
-attached (a login/register attempt) is a plain credentials error, and the
-backend's real message is shown as-is.
+request. Auth state is only ever touched in two places: a successful
+login/register sets it, and the one-time `/auth/me` check on app load
+quietly clears the token if it's no longer valid — no global "you've been
+logged out" interceptor watching every request. A `401` on any other call
+(loading incidents, alerts, etc.) is just an error that page's own
+loading/error state handles, the same as any other failed request; it
+doesn't tear down the session.
 
 Since the API's docs don't pin down the exact key the JWT comes back under,
 `extractToken()` checks common key names (`token`, `accessToken`, `jwt`,
