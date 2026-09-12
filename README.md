@@ -107,6 +107,22 @@ src/
                  MobileSidebar, Header
 ```
 
+## Dark mode
+
+Every semantic color (`bg`, `surface`, `ink`, `muted`, `border`, `primary`,
+and each severity color) is a CSS custom property, and components are
+built entirely on those tokens rather than raw hex values — so a single
+`.dark { ... }` override block in `src/index.css` re-themes the whole app.
+
+- Toggle lives in the app header, the landing/login/register pages, and
+  Settings → Appearance.
+- Preference persists to `localStorage` and falls back to the OS setting
+  on first visit; a small inline script in `index.html` applies the class
+  before first paint so there's no flash of the wrong theme.
+- The admin control-room login (`/admin/login`) is intentionally a fixed
+  dark "terminal" aesthetic regardless of the site-wide toggle — that's a
+  deliberate design choice, not an oversight.
+
 ## Design
 
 Colour carries meaning consistently everywhere — the same palette maps to
@@ -151,6 +167,7 @@ npm run dev
       history for residents
 - [x] Profile — view and edit via `/auth/me` + `PATCH /auth/me`
 - [x] Responsive from 375px through desktop
+- [x] Light and dark mode, toggleable, persisted, applied everywhere
 
 ## Known limitations
 
