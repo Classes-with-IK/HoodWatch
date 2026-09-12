@@ -51,9 +51,10 @@ function IncidentDetail() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState("");
 
-  const [statusForm, setStatusForm] = useState({ status: "", notes: "" });
+  const [statusForm, setStatusForm] = useState({ status: "", notes: "", assignedOfficerId: "" });
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [statusError, setStatusError] = useState("");
+  const [officers, setOfficers] = useState([]);
 
   const canManageStatus =
     user && (user.role === "patrol_officer" || user.role === "admin");
@@ -67,6 +68,32 @@ function IncidentDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
+  useEffect(() => {
+    if (!canManageStatus) return;
+
+    async function loadOfficers() {
+      try {
+        const response = await apiFetch("/patrols");
+        const patrols = response.patrols ?? response.data ?? [];
+
+        const unique = new Map();
+        patrols.forEach((patrol) => {
+          if (patrol.officerId && patrol.officerName) {
+            unique.set(patrol.officerId, patrol.officerName);
+          }
+        });
+
+        setOfficers(
+          Array.from(unique, ([id, name]) => ({ id, name })),
+        );
+      } catch {
+        setOfficers([]);
+      }
+    }
+
+    loadOfficers();
+  }, [canManageStatus]);
+
   async function loadIncident() {
     setLoading(true);
     setError("");
@@ -77,7 +104,11 @@ function IncidentDetail() {
 
       setIncident(data);
       setHasUpvoted(Boolean(data.upvotes?.includes(user?.id)));
-      setStatusForm({ status: data.status ?? "", notes: "" });
+      setStatusForm({
+        status: data.status ?? "",
+        notes: "",
+        assignedOfficerId: data.assignedTo?.userId ?? "",
+      });
     } catch (err) {
       setError(err.message || "Unable to load this incident.");
     } finally {
@@ -184,6 +215,7 @@ function IncidentDetail() {
         body: JSON.stringify({
           status: statusForm.status,
           notes: statusForm.notes || undefined,
+          assignedOfficerId: statusForm.assignedOfficerId || undefined,
         }),
       });
 
@@ -336,41 +368,71 @@ function IncidentDetail() {
             </div>
           )}
 
-          <form
-            onSubmit={handleStatusSubmit}
-            className="mt-4 grid gap-3 sm:grid-cols-[160px_1fr_auto]"
-          >
-            <select
-              value={statusForm.status}
-              onChange={(event) =>
-                setStatusForm((current) => ({ ...current, status: event.target.value }))
-              }
-              className="h-10 rounded-lg border border-border bg-surface px-2.5 text-sm outline-none focus:border-primary"
-            >
-              {STATUS_OPTIONS.map((status) => (
-                <option key={status} value={status}>
-                  {status.replace(/_/g, " ")}
-                </option>
-              ))}
-            </select>
+          <form onSubmit={handleStatusSubmit} className="mt-4 space-y-3">
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted">
+                  Status
+                </label>
+                <select
+                  value={statusForm.status}
+                  onChange={(event) =>
+                    setStatusForm((current) => ({ ...current, status: event.target.value }))
+                  }
+                  className="h-10 w-full rounded-lg border border-border bg-surface px-2.5 text-sm outline-none focus:border-primary"
+                >
+                  {STATUS_OPTIONS.map((status) => (
+                    <option key={status} value={status}>
+                      {status.replace(/_/g, " ")}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            <input
-              type="text"
-              value={statusForm.notes}
-              onChange={(event) =>
-                setStatusForm((current) => ({ ...current, notes: event.target.value }))
-              }
-              placeholder="Notes (optional)"
-              className="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none focus:border-primary"
-            />
+              <div>
+                <label className="mb-1.5 block text-xs font-medium text-muted">
+                  Assign officer
+                  <span className="ml-1 font-normal text-muted">(optional)</span>
+                </label>
+                <select
+                  value={statusForm.assignedOfficerId}
+                  onChange={(event) =>
+                    setStatusForm((current) => ({
+                      ...current,
+                      assignedOfficerId: event.target.value,
+                    }))
+                  }
+                  className="h-10 w-full rounded-lg border border-border bg-surface px-2.5 text-sm outline-none focus:border-primary"
+                >
+                  <option value="">Unassigned</option>
+                  {officers.map((officer) => (
+                    <option key={officer.id} value={officer.id}>
+                      {officer.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
-            <button
-              type="submit"
-              disabled={updatingStatus}
-              className="inline-flex h-10 items-center justify-center rounded-lg bg-primary px-4 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {updatingStatus ? "Updating..." : "Update"}
-            </button>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                type="text"
+                value={statusForm.notes}
+                onChange={(event) =>
+                  setStatusForm((current) => ({ ...current, notes: event.target.value }))
+                }
+                placeholder="Notes (optional)"
+                className="h-10 w-full rounded-lg border border-border bg-surface px-3 text-sm outline-none focus:border-primary"
+              />
+
+              <button
+                type="submit"
+                disabled={updatingStatus}
+                className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-primary px-5 text-sm font-semibold text-white transition hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {updatingStatus ? "Updating..." : "Update"}
+              </button>
+            </div>
           </form>
         </div>
       )}
