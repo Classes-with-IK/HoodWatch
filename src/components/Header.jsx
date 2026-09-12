@@ -58,9 +58,15 @@ function Header({ onMenuClick }) {
               <p className="text-sm font-semibold leading-tight text-ink">
                 {user.name}
               </p>
-              <p className="text-xs capitalize leading-tight text-muted">
-                {user.role?.replace(/_/g, " ")}
-              </p>
+              {user.role === "admin" ? (
+                <span className="mt-0.5 inline-flex items-center rounded-full bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                  Admin
+                </span>
+              ) : (
+                <p className="text-xs capitalize leading-tight text-muted">
+                  {user.role?.replace(/_/g, " ")}
+                </p>
+              )}
             </div>
 
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">

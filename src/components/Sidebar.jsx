@@ -13,8 +13,7 @@ import {
 import { useAuth } from "../auth/AuthContext";
 import { initialsFromName } from "../lib/format";
 
-const navigation = [
-  { label: "Home", icon: Home, path: "/dashboard", end: true },
+const baseNavigation = [
   { label: "Incidents", icon: ShieldAlert, path: "/incidents" },
   { label: "Report", icon: FilePlus, path: "/report" },
   { label: "Alerts", icon: Bell, path: "/alerts" },
@@ -24,6 +23,17 @@ const navigation = [
 function Sidebar({ collapsible = false }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = user?.role === "admin";
+
+  const navigation = [
+    {
+      label: "Home",
+      icon: isAdmin ? Radar : Home,
+      path: isAdmin ? "/admin" : "/dashboard",
+      end: true,
+    },
+    ...baseNavigation,
+  ];
 
   const labelClass = collapsible
     ? "min-w-0 overflow-hidden whitespace-nowrap opacity-0 transition-opacity duration-150 group-hover/sidebar:opacity-100"
@@ -74,22 +84,6 @@ function Sidebar({ collapsible = false }) {
               </NavLink>
             );
           })}
-
-          {user?.role === "admin" && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-lg px-2.5 py-2.5 text-sm font-medium transition ${
-                  isActive
-                    ? "bg-primary text-white"
-                    : "text-muted hover:bg-bg hover:text-primary"
-                }`
-              }
-            >
-              <Radar size={18} strokeWidth={1.8} className="shrink-0" />
-              <span className={labelClass}>Control room</span>
-            </NavLink>
-          )}
         </div>
 
         <div className="my-6 border-t border-border" />
@@ -137,8 +131,13 @@ function Sidebar({ collapsible = false }) {
             </div>
 
             <div className={labelClass}>
-              <p className="truncate text-sm font-semibold text-ink">
+              <p className="flex items-center gap-1.5 truncate text-sm font-semibold text-ink">
                 {user ? user.name : "Sign out"}
+                {isAdmin && (
+                  <span className="shrink-0 rounded-full bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                    Admin
+                  </span>
+                )}
               </p>
 
               <p className="mt-0.5 flex items-center gap-1 text-xs text-muted">
