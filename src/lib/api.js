@@ -38,9 +38,10 @@ export function extractUser(payload) {
 
 // The API's docs promise a JWT comes back on register/login, but don't
 // specify the exact key it's returned under. Rather than guess one name
-// and silently break auth if it's wrong, check the common key names first
-// and fall back to scanning the payload for anything shaped like a JWT
-// (three dot-separated base64url segments).
+// and silently break auth if it's wrong, this checks common key names
+// first, then any key whose name contains "token"/"jwt" anywhere in the
+// payload, and finally falls back to scanning for a value shaped like a
+// JWT (three dot-separated base64url segments).
 export function extractToken(payload) {
     if (!payload || typeof payload !== "object") return null
 
@@ -67,18 +68,24 @@ export function extractToken(payload) {
         }
     }
 
-    const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/
+    function scanByKeyName(value, depth = 0) {
+        if (depth > 4 || !value || typeof value !== "object") return null
 
-    function scan(value, depth = 0) {
-        if (depth > 3 || value == null) return null
+        for (const [key, nested] of Object.entries(value)) {
+            const lowerKey = key.toLowerCase()
 
-        if (typeof value === "string") {
-            return jwtPattern.test(value) ? value : null
+            if (
+                typeof nested === "string" &&
+                nested.length > 0 &&
+                (lowerKey.includes("token") || lowerKey.includes("jwt"))
+            ) {
+                return nested
+            }
         }
 
-        if (typeof value === "object") {
-            for (const nested of Object.values(value)) {
-                const found = scan(nested, depth + 1)
+        for (const nested of Object.values(value)) {
+            if (typeof nested === "object") {
+                const found = scanByKeyName(nested, depth + 1)
                 if (found) return found
             }
         }
@@ -86,7 +93,29 @@ export function extractToken(payload) {
         return null
     }
 
-    return scan(payload)
+    const byKeyName = scanByKeyName(payload)
+    if (byKeyName) return byKeyName
+
+    const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/
+
+    function scanByShape(value, depth = 0) {
+        if (depth > 4 || value == null) return null
+
+        if (typeof value === "string") {
+            return jwtPattern.test(value) ? value : null
+        }
+
+        if (typeof value === "object") {
+            for (const nested of Object.values(value)) {
+                const found = scanByShape(nested, depth + 1)
+                if (found) return found
+            }
+        }
+
+        return null
+    }
+
+    return scanByShape(payload)
 }
 
 export async function apiFetch(path, options = {}) {
@@ -114,10 +143,13 @@ export async function apiFetch(path, options = {}) {
             body?.detail ||
             `Request failed with status ${response.status}`
 
-        if (response.status === 401) {
-            // Whatever the backend's exact wording is ("invalid session",
-            // "user no longer exists", "jwt expired"...), the person just
-            // needs to sign in again — show one clear, friendly message.
+        // A 401 only means "your session has ended" if this request was
+        // actually carrying a session (a stored bearer token) that the
+        // server just rejected. A 401 on a request with no token attached
+        // is almost always a login/register attempt with the wrong
+        // credentials — that's a different problem, so leave the
+        // backend's real message alone and don't touch any session state.
+        if (response.status === 401 && token) {
             message = "Your session has ended. Please sign in again."
             storeToken(null)
             unauthorizedHandler?.()
