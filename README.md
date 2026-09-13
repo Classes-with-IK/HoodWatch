@@ -1,8 +1,8 @@
 # HoodWatch
 
 A community safety coordination platform. Residents report incidents, patrol
-officers walk shifts and log checkpoints, admins broadcast zone alerts —
-built against the Community Watch & Neighborhood Safety API.
+officers walk shifts and log checkpoints, admins broadcast zone alerts.
+Built against the Community Watch & Neighborhood Safety API.
 
 ## Live API
 
@@ -12,91 +12,49 @@ Docs:   https://1-community-watch-api.vercel.app/docs
 Spec:   https://1-community-watch-api.vercel.app/openapi.json
 ```
 
-## Auth style: httpOnly cookie
+## Auth
 
-This project authenticates with the httpOnly session cookie the API sets
-automatically on register and login (`community_watch_token`) — not a
-bearer token. `src/lib/api.js` sends `credentials: "include"` on every
-request and never touches a token at all: no `localStorage`, no
-`Authorization` header, nothing to read or store client-side. The browser
-handles attaching the cookie on its own.
+Uses the httpOnly session cookie the API sets on register and login
+(`community_watch_token`), not a bearer token. `src/lib/api.js` sends
+`credentials: "include"` on every request; there's no token stored or read
+on the client. `AuthContext` calls `GET /auth/me` once on load to restore
+the session if the cookie is present.
 
-This wasn't the original choice — an earlier version of this project tried
-bearer-JWT-in-localStorage instead, on the theory that it would sidestep
-cross-site cookie issues between the frontend and API's separate domains.
-It didn't: the API's OpenAPI spec documents that register/login "return a
-JWT" but never specifies the response shape or the key it comes back
-under, so every attempt to extract it was a guess, and every guess that
-turned out wrong surfaced as a confusing "invalid session" error at some
-point downstream. The cookie has no such ambiguity — the server sets it,
-the browser stores and sends it, and there's nothing for the frontend to
-get wrong.
-
-`AuthContext` calls `GET /auth/me` once on app load; if the browser is
-holding a valid cookie, the session is restored, and if not, the person is
-just treated as logged out — no assumed, cached, or faked user state
-either way. Auth state changes only in two places: a successful
-login/register sets it, and that one-time check clears it if the cookie
-turned out to be missing or invalid. A `401` from any other call (loading
-incidents, alerts, etc.) doesn't touch the session — it's just an error
-that page's own loading/error state handles, same as any other failed
-request.
-
-## Roles implemented
-
-All three roles from the brief are implemented:
+## Roles
 
 - **resident** — report incidents, comment, upvote/confirm, view alerts and
   patrol activity for their zone, edit their profile.
 - **patrol_officer** — everything above, plus start/checkpoint/end a patrol
-  shift and update an incident's status (`PATCH /incidents/{id}/status`).
-- **admin** — everything above, plus a dedicated control room and broadcast
-  alerts (`POST /alerts`).
+  shift and update an incident's status.
+- **admin** — everything above, plus a control room and alert broadcasting.
 
-Role-gated UI (the patrol status control, the alert broadcast form, patrol
-start/checkpoint/end, the admin control room) only renders for the matching
-role — the API is still the source of truth and is expected to reject
-anything the frontend missed.
+Role-gated UI (status updates, alert broadcast, patrol controls, the admin
+dashboard) only renders for the matching role. The API enforces permissions
+server-side regardless.
 
 ## Registration and login
 
 Registration is shared: `/register` has a Resident / Patrol officer / Admin
-picker, and creates the account with whichever role is selected, routing
-into `/admin` or `/dashboard` accordingly.
+picker and routes into `/dashboard` or `/admin` based on the role chosen.
 
-Login is split by audience:
+Login is split:
 
-- **`/login`** — residents and patrol officers. Also links out to
-  `/admin/login` for admins.
-- **`/admin/login`** — a distinct sign-in screen (dark "control room"
-  styling). It calls the same `POST /auth/login` endpoint — there's no
-  separate backend auth flow for admins — but if the returned user's role
-  isn't `admin`, the session is immediately logged out again and the
-  person is told to use the main login instead.
+- **`/login`** — residents and patrol officers, with a link out to
+  `/admin/login`.
+- **`/admin/login`** — dark "control room" styling. Same `/auth/login`
+  endpoint, but a non-admin account gets logged out immediately and told to
+  use the main login instead.
 
 ## Admin control room
 
-- **`/admin`** — live stats, a "needs attention" queue of freshly reported
-  incidents, active patrol shifts, and the alert broadcast form. Guarded by
-  `AdminRoute`, which redirects to `/admin/login` if signed out, or
-  `/dashboard` if signed in as anything other than admin.
-- The needs-attention queue supports bulk triage: select multiple reports
-  and mark them "under review" or "dismissed" in one action.
-- The dashboard and its incident/alert widgets are **not** zone-scoped for
-  admins — residents and officers see their own zone by default, but an
-  admin sees the whole community, since oversight is the point.
-
-Signing in as an admin through the *regular* `/login` still works and lands
-on `/admin` directly. Patrol officers keep broadcasting alerts from the
-regular `/alerts` page — `AlertBroadcastForm` is shared between the two so
-that logic only exists once.
-
-Admin's sidebar "Home" points at `/admin` rather than the resident-style
-`/dashboard`, so there's one clear home per role instead of two competing
-ones. A small "Admin" badge shows next to the name in the header and the
-sidebar's account card as a reminder of which mode you're in while
-browsing the pages that are otherwise identical across roles (incidents,
-alerts, patrols, profile).
+- **`/admin`** — stats, a needs-attention queue of freshly reported
+  incidents, active patrols, and the alert broadcast form.
+- Needs-attention supports bulk triage — select several reports and mark
+  them reviewing or dismissed at once.
+- Not zone-scoped: admins see activity across the whole community, not
+  just their own zone.
+- Sidebar "Home" points admins at `/admin` instead of the resident
+  dashboard, and a small "Admin" badge shows in the header and sidebar.
 
 ## Structure
 
@@ -116,35 +74,23 @@ src/
 
 ## Dark mode
 
-Every semantic color (`bg`, `surface`, `ink`, `muted`, `border`, `primary`,
-and each severity color) is a CSS custom property, and components are
-built entirely on those tokens rather than raw hex values — so a single
-`.dark { ... }` override block in `src/index.css` re-themes the whole app.
+Every color is a CSS custom property (`bg`, `surface`, `ink`, `muted`,
+`border`, `primary`, and the severity colors), with dark equivalents in a
+`.dark` override block in `src/index.css`. Toggle lives in the header, the
+auth pages, and Settings → Appearance. Preference persists to
+`localStorage` and falls back to the OS setting on first visit.
 
-- Toggle lives in the app header, the landing/login/register pages, and
-  Settings → Appearance.
-- Preference persists to `localStorage` and falls back to the OS setting
-  on first visit; a small inline script in `index.html` applies the class
-  before first paint so there's no flash of the wrong theme.
-- The admin control-room login (`/admin/login`) is intentionally a fixed
-  dark "terminal" aesthetic regardless of the site-wide toggle — that's a
-  deliberate design choice, not an oversight.
+The admin login page keeps its dark styling regardless of the toggle —
+that's a fixed design choice for that page, not tied to the site-wide
+theme.
 
 ## Design
 
-Colour carries meaning consistently everywhere — the same palette maps to
-status, priority, and alert severity across the feed, the detail page, and
-the dashboard, and every state also has a label and icon so nothing depends
-on colour alone. One accent (`--color-primary`, a deep emerald) is reserved
-for actions; severity colours never double as buttons.
-
-Type pairs a quiet Inter body with Newsreader for headlines, aiming for a
-calm, editorial feel rather than a generic SaaS dashboard. Cards carry a
-subtle two-tier shadow (`shadow-card` / `shadow-card-hover`) for depth
-without going heavy-handed on it.
-
-The desktop sidebar collapses to a 76px icon rail and expands to full width
-on hover; the mobile drawer is unaffected.
+One accent color (a deep emerald) for actions; status/priority/severity
+use their own consistent palette across the whole app, always paired with
+a label and icon so nothing depends on color alone. Newsreader for
+headlines, Inter for body text. Cards use a subtle two-tier shadow for
+depth. Desktop sidebar collapses to a 76px icon rail and expands on hover.
 
 ## Running locally
 
@@ -153,38 +99,31 @@ npm install
 npm run dev
 ```
 
-## What's implemented
+## Implemented
 
-- [x] Landing page — standalone (no app sidebar), just a logo and
-      sign in/sign up, hero, live `/public/stats`, how-it-works, role
-      breakdown
-- [x] Register, login, logout, session persistence via the httpOnly cookie
-- [x] Protected routing, plus a separate admin-only login and route
-- [x] Resident dashboard (zone alert banner, live stats, recent incidents)
-- [x] Admin control room — overview stats, needs-attention queue, active
-      patrols, alert broadcast
-- [x] Incident feed — search, status/category/priority/zone filters
-      (deep-linkable via URL params), loading/empty/error states
-- [x] Incident detail — status timeline, comments, upvote/confirm,
-      officer assignment for admins/officers, ownership-safe delete
-- [x] Report incident — controlled category/priority enums, validation
-- [x] Safety alerts — zone/severity filters, severity-distinct styling,
-      expired-alert handling, admin/officer broadcast form
-- [x] Patrol shifts — start/checkpoint/end for officers, read-only shift
-      history for residents
-- [x] Profile — view and edit via `/auth/me` + `PATCH /auth/me`
-- [x] Responsive from 375px through desktop
-- [x] Light and dark mode, toggleable, persisted, applied everywhere
+- Landing page with live stats, how-it-works, and role breakdown
+- Register, login, logout, session persistence
+- Protected routing, plus a separate admin login and route
+- Resident dashboard with zone alerts, stats, recent incidents
+- Admin control room with bulk triage
+- Incident feed with search and filters (status/category/priority/zone),
+  deep-linkable via URL params
+- Incident detail with status timeline, comments, upvotes, officer
+  assignment, ownership-safe delete
+- Report form with controlled category/priority enums and validation
+- Safety alerts with zone/severity filters and broadcast form
+- Patrol shifts — start/checkpoint/end for officers, read-only for residents
+- Profile view/edit
+- Responsive from 375px up
+- Light and dark mode
 
 ## Known limitations
 
-- The API does not expose a password-change or account-deletion endpoint,
-  so Settings only surfaces account info and sign-out.
-- `GET /public/stats` does not return a `recentPublicNotices` field in its
-  documented response shape — the landing page relies on the `overview`
-  block only.
-- Cookie auth assumes the browser accepts the cross-site cookie between
-  this frontend's origin and the API's (`SameSite=None; Secure` on the
-  server's side). This is standard for modern browsers when set up
-  correctly, but if you ever see auth fail specifically in one browser or
-  in an in-app webview, that's the first thing to check.
+- No password-change or account-deletion endpoint, so Settings only shows
+  account info and sign-out.
+- `GET /public/stats` doesn't return a `recentPublicNotices` field despite
+  early assumptions — the landing page only uses the `overview` block.
+- Cookie auth needs the browser to accept the cross-site cookie between
+  this frontend's origin and the API's. Standard for modern browsers with
+  proper `SameSite=None; Secure` config, but worth checking first if auth
+  ever misbehaves in one specific browser or an in-app webview.

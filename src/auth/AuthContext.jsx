@@ -8,20 +8,14 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        // Clean up the token key from the earlier bearer/localStorage
-        // approach — it's dead data now and no longer read anywhere.
         try {
             localStorage.removeItem("hoodwatch_token")
         } catch {
-            // localStorage unavailable — nothing to clean up.
+            /* empty */
         }
 
         async function restoreSession() {
             try {
-                // If the browser is holding a valid session cookie, this
-                // succeeds and the person is restored automatically. If
-                // not (no cookie, or an expired one), it 401s and we just
-                // treat this like an ordinary logged-out visit.
                 const response = await apiFetch("/auth/me")
                 setUser(extractUser(response))
             } catch {
@@ -34,9 +28,6 @@ export function AuthProvider({ children }) {
         restoreSession()
     }, [])
 
-    // Called after a successful login/register response. The session
-    // cookie is already set by the server at this point — this just
-    // updates the in-memory user so the UI reflects it immediately.
     function login(userData) {
         setUser(userData)
     }

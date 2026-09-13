@@ -8,7 +8,7 @@ function getInitialTheme() {
     const stored = localStorage.getItem(THEME_KEY);
     if (stored === "light" || stored === "dark") return stored;
   } catch {
-    // localStorage unavailable — fall through to system preference.
+    /* empty */
   }
 
   if (typeof window !== "undefined" && window.matchMedia) {
@@ -29,7 +29,7 @@ export function ThemeProvider({ children }) {
     try {
       localStorage.setItem(THEME_KEY, theme);
     } catch {
-      // localStorage unavailable — theme just won't persist.
+      /* empty */
     }
   }, [theme]);
 

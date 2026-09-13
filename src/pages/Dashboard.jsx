@@ -49,7 +49,6 @@ function Dashboard() {
   useEffect(() => {
     async function loadIncidents() {
       try {
-        // Admins oversee the whole community, not just their own zone.
         const zone = user?.role === "admin" ? null : user?.zone;
         const path = zone ? `/incidents?zone=${encodeURIComponent(zone)}` : "/incidents";
         const response = await apiFetch(path);

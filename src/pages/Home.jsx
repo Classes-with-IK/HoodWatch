@@ -138,7 +138,6 @@ function Home() {
           </div>
         </div>
       </header>
-      {/* Hero */}
       <section className="border-b border-border bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-24">
           <div className="max-w-2xl">
@@ -188,7 +187,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Live stats */}
       <section className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         {error && (
           <div className="mb-6 rounded-xl border border-border bg-surface p-4 text-sm text-critical">
@@ -242,7 +240,6 @@ function Home() {
         </div>
       </section>
 
-      {/* How it works */}
       <section className="border-y border-border bg-surface">
         <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
           <div className="max-w-xl">
@@ -278,7 +275,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Roles */}
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
         <div className="max-w-xl">
           <p className="font-display text-sm font-medium italic text-primary">
@@ -310,7 +306,6 @@ function Home() {
         </div>
       </section>
 
-      {/* Closing CTA */}
       {!user && (
         <section className="border-t border-border bg-[#15201c]">
           <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-4 py-14 sm:flex-row sm:items-center sm:justify-between sm:px-6">

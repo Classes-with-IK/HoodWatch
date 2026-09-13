@@ -65,9 +65,6 @@ function Register() {
       const userData = extractUser(response);
 
       if (userData) {
-        // The server sets the httpOnly session cookie automatically on
-        // register — this just updates the in-memory user so the UI
-        // reflects it right away.
         login(userData);
         navigate(userData.role === "admin" ? "/admin" : "/dashboard");
       } else {

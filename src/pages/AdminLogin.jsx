@@ -39,11 +39,6 @@ function AdminLogin() {
       const userData = extractUser(response);
 
       if (userData?.role !== "admin") {
-        // The API already set the session cookie for these credentials
-        // regardless of role — not calling login() here only skips
-        // updating React state, it doesn't undo that. Explicitly log out
-        // so a non-admin can't get in through this door by refreshing
-        // afterwards.
         await apiFetch("/auth/logout", { method: "POST" }).catch(() => {});
 
         setError(
