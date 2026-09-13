@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck, User, Footprints, Radar } from "lucide-react";
 
-import { apiFetch, extractUser, extractToken } from "../lib/api";
+import { apiFetch, extractUser } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -63,14 +63,12 @@ function Register() {
       });
 
       const userData = extractUser(response);
-      const token = extractToken(response);
 
       if (userData) {
-        // Log them in even if we couldn't find a bearer token in the
-        // response — the server also sets an httpOnly session cookie on
-        // register, and every request already sends credentials, so the
-        // session can still work without one.
-        login(userData, token);
+        // The server sets the httpOnly session cookie automatically on
+        // register — this just updates the in-memory user so the UI
+        // reflects it right away.
+        login(userData);
         navigate(userData.role === "admin" ? "/admin" : "/dashboard");
       } else {
         navigate("/login");

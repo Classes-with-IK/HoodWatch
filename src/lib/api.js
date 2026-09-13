@@ -1,123 +1,23 @@
 const BASE_URL = "https://1-community-watch-api.vercel.app/api/v1"
-const TOKEN_KEY = "hoodwatch_token"
 
-export function getStoredToken() {
-    try {
-        return localStorage.getItem(TOKEN_KEY)
-    } catch {
-        return null
-    }
-}
-
-export function storeToken(token) {
-    try {
-        if (token) {
-            localStorage.setItem(TOKEN_KEY, token)
-        } else {
-            localStorage.removeItem(TOKEN_KEY)
-        }
-    } catch {
-        // localStorage unavailable (private browsing, storage full, etc.)
-    }
-}
-
+// The API sets an httpOnly session cookie automatically on register/login
+// (cookie name: community_watch_token). That cookie is invisible to
+// JavaScript by design, and the browser attaches it to every request on
+// its own as long as `credentials: "include"` is set — so there is no
+// token to read, store, or guess the shape of. This is deliberately the
+// entire auth mechanism: no localStorage, no Authorization header.
 export function extractUser(payload) {
     if (!payload || typeof payload !== "object") return null
 
     return payload.user ?? payload.data?.user ?? payload.data ?? null
 }
 
-// The API's docs promise a JWT comes back on register/login, but don't
-// specify the exact key it's returned under. Rather than guess one name
-// and silently break auth if it's wrong, this checks common key names
-// first, then any key whose name contains "token"/"jwt" anywhere in the
-// payload, and finally falls back to scanning for a value shaped like a
-// JWT (three dot-separated base64url segments).
-export function extractToken(payload) {
-    if (!payload || typeof payload !== "object") return null
-
-    const candidateKeys = [
-        "token",
-        "accessToken",
-        "access_token",
-        "jwt",
-        "authToken",
-        "auth_token",
-        "sessionToken",
-        "session_token",
-    ]
-
-    const sources = [payload, payload.data, payload.session, payload.auth]
-
-    for (const source of sources) {
-        if (!source || typeof source !== "object") continue
-
-        for (const key of candidateKeys) {
-            if (typeof source[key] === "string" && source[key].length > 0) {
-                return source[key]
-            }
-        }
-    }
-
-    function scanByKeyName(value, depth = 0) {
-        if (depth > 4 || !value || typeof value !== "object") return null
-
-        for (const [key, nested] of Object.entries(value)) {
-            const lowerKey = key.toLowerCase()
-
-            if (
-                typeof nested === "string" &&
-                nested.length > 0 &&
-                (lowerKey.includes("token") || lowerKey.includes("jwt"))
-            ) {
-                return nested
-            }
-        }
-
-        for (const nested of Object.values(value)) {
-            if (typeof nested === "object") {
-                const found = scanByKeyName(nested, depth + 1)
-                if (found) return found
-            }
-        }
-
-        return null
-    }
-
-    const byKeyName = scanByKeyName(payload)
-    if (byKeyName) return byKeyName
-
-    const jwtPattern = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/
-
-    function scanByShape(value, depth = 0) {
-        if (depth > 4 || value == null) return null
-
-        if (typeof value === "string") {
-            return jwtPattern.test(value) ? value : null
-        }
-
-        if (typeof value === "object") {
-            for (const nested of Object.values(value)) {
-                const found = scanByShape(nested, depth + 1)
-                if (found) return found
-            }
-        }
-
-        return null
-    }
-
-    return scanByShape(payload)
-}
-
 export async function apiFetch(path, options = {}) {
-    const token = getStoredToken()
-
     const response = await fetch(BASE_URL + path, {
         ...options,
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
             ...options.headers,
         },
     })

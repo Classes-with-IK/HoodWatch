@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Radar, ArrowLeft } from "lucide-react";
 
-import { apiFetch, extractUser, extractToken } from "../lib/api";
+import { apiFetch, extractUser } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 
 function AdminLogin() {
@@ -37,7 +37,6 @@ function AdminLogin() {
       });
 
       const userData = extractUser(response);
-      const token = extractToken(response);
 
       if (userData?.role !== "admin") {
         setError(
@@ -47,7 +46,7 @@ function AdminLogin() {
         return;
       }
 
-      login(userData, token);
+      login(userData);
       navigate("/admin");
     } catch (err) {
       setError(err.message || "Unable to sign in.");

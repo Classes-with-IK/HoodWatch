@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
 
-import { apiFetch, extractUser, extractToken } from "../lib/api";
+import { apiFetch, extractUser } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -46,9 +46,8 @@ function Login() {
       });
 
       const userData = extractUser(response);
-      const token = extractToken(response);
 
-      login(userData, token);
+      login(userData);
 
       navigate(userData?.role === "admin" ? "/admin" : "/dashboard");
     } catch (error) {
