@@ -12,40 +12,35 @@ Docs:   https://1-community-watch-api.vercel.app/docs
 Spec:   https://1-community-watch-api.vercel.app/openapi.json
 ```
 
-## Auth style: JWT bearer, stored in localStorage
+## Auth style: httpOnly cookie
 
-This project authenticates with a bearer JWT rather than the httpOnly
-session cookie — the API supports both at once, and bearer avoids the
-cross-site cookie issues that come from the frontend and API living on
-different domains (Netlify/Vercel vs. the API's own Vercel deployment).
+This project authenticates with the httpOnly session cookie the API sets
+automatically on register and login (`community_watch_token`) — not a
+bearer token. `src/lib/api.js` sends `credentials: "include"` on every
+request and never touches a token at all: no `localStorage`, no
+`Authorization` header, nothing to read or store client-side. The browser
+handles attaching the cookie on its own.
 
-A single fetch wrapper (`src/lib/api.js`) reads the token from
-`localStorage` and attaches `Authorization: Bearer <token>` on every
-request. Auth state is only ever touched in two places: a successful
-login/register sets it, and the one-time `/auth/me` check on app load
-quietly clears the token if it's no longer valid — no global "you've been
-logged out" interceptor watching every request. A `401` on any other call
-(loading incidents, alerts, etc.) is just an error that page's own
-loading/error state handles, the same as any other failed request; it
-doesn't tear down the session.
+This wasn't the original choice — an earlier version of this project tried
+bearer-JWT-in-localStorage instead, on the theory that it would sidestep
+cross-site cookie issues between the frontend and API's separate domains.
+It didn't: the API's OpenAPI spec documents that register/login "return a
+JWT" but never specifies the response shape or the key it comes back
+under, so every attempt to extract it was a guess, and every guess that
+turned out wrong surfaced as a confusing "invalid session" error at some
+point downstream. The cookie has no such ambiguity — the server sets it,
+the browser stores and sends it, and there's nothing for the frontend to
+get wrong.
 
-Since the API's docs don't pin down the exact key the JWT comes back under,
-`extractToken()` checks common key names (`token`, `accessToken`, `jwt`,
-etc.) across the top-level response and a few likely wrapper objects, then
-falls back to scanning the payload for anything shaped like a JWT
-(three dot-separated base64url segments). This is what register/login/admin
-login all use to pull the session out of whatever shape the response
-actually is.
-
-**Tradeoff worth knowing:** a token in `localStorage` is readable by any
-script running on the page, so it's more exposed to XSS than an httpOnly
-cookie would be. Reasonable for a portfolio project; a production app
-handling real user data would want the cookie flow (or short-lived tokens
-with rotation) instead.
-
-On load, `AuthContext` checks for a stored token and, if present, calls
-`GET /auth/me` to restore the session. No user state is ever assumed,
-cached across reloads, or faked.
+`AuthContext` calls `GET /auth/me` once on app load; if the browser is
+holding a valid cookie, the session is restored, and if not, the person is
+just treated as logged out — no assumed, cached, or faked user state
+either way. Auth state changes only in two places: a successful
+login/register sets it, and that one-time check clears it if the cookie
+turned out to be missing or invalid. A `401` from any other call (loading
+incidents, alerts, etc.) doesn't touch the session — it's just an error
+that page's own loading/error state handles, same as any other failed
+request.
 
 ## Roles implemented
 
@@ -76,8 +71,8 @@ Login is split by audience:
 - **`/admin/login`** — a distinct sign-in screen (dark "control room"
   styling). It calls the same `POST /auth/login` endpoint — there's no
   separate backend auth flow for admins — but if the returned user's role
-  isn't `admin`, the token is never stored and the person is told to use
-  the main login instead.
+  isn't `admin`, the session is immediately logged out again and the
+  person is told to use the main login instead.
 
 ## Admin control room
 
@@ -163,7 +158,7 @@ npm run dev
 - [x] Landing page — standalone (no app sidebar), just a logo and
       sign in/sign up, hero, live `/public/stats`, how-it-works, role
       breakdown
-- [x] Register, login, logout, session persistence via a stored bearer token
+- [x] Register, login, logout, session persistence via the httpOnly cookie
 - [x] Protected routing, plus a separate admin-only login and route
 - [x] Resident dashboard (zone alert banner, live stats, recent incidents)
 - [x] Admin control room — overview stats, needs-attention queue, active
@@ -188,5 +183,8 @@ npm run dev
 - `GET /public/stats` does not return a `recentPublicNotices` field in its
   documented response shape — the landing page relies on the `overview`
   block only.
-- A localStorage-held bearer token is more exposed to XSS than an httpOnly
-  cookie; see the auth section above.
+- Cookie auth assumes the browser accepts the cross-site cookie between
+  this frontend's origin and the API's (`SameSite=None; Secure` on the
+  server's side). This is standard for modern browsers when set up
+  correctly, but if you ever see auth fail specifically in one browser or
+  in an in-app webview, that's the first thing to check.
