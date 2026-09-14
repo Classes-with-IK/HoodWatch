@@ -1,17 +1,42 @@
 const BASE_URL = "https://1-community-watch-api.vercel.app/api/v1"
 
-// In-memory only (never persisted): falls back to Authorization: Bearer when
-// the browser won't retain the cross-site httpOnly cookie (third-party
-// cookie blocking, webviews, Safari ITP). The API issues this token
-// alongside the cookie on login/register for exactly this case.
-let authToken = null
+// Falls back to Authorization: Bearer when the browser won't retain the
+// cross-site httpOnly cookie (third-party cookie blocking, webviews, Safari
+// ITP). The API issues this token alongside the cookie on login/register for
+// exactly this case. Persisted in sessionStorage so the fallback survives a
+// page reload, not just in-session navigation.
+const TOKEN_STORAGE_KEY = "hoodwatch_token"
+
+let authToken = readStoredToken()
+
+function readStoredToken() {
+    try {
+        return sessionStorage.getItem(TOKEN_STORAGE_KEY) || null
+    } catch {
+        return null
+    }
+}
 
 export function setAuthToken(token) {
     authToken = token || null
+    try {
+        if (authToken) {
+            sessionStorage.setItem(TOKEN_STORAGE_KEY, authToken)
+        } else {
+            sessionStorage.removeItem(TOKEN_STORAGE_KEY)
+        }
+    } catch {
+        /* empty */
+    }
 }
 
 export function clearAuthToken() {
     authToken = null
+    try {
+        sessionStorage.removeItem(TOKEN_STORAGE_KEY)
+    } catch {
+        /* empty */
+    }
 }
 
 export function extractUser(payload) {
