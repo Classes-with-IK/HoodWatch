@@ -8,12 +8,6 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        try {
-            localStorage.removeItem("hoodwatch_token")
-        } catch {
-            /* empty */
-        }
-
         async function restoreSession() {
             try {
                 const response = await apiFetch("/auth/me")
