@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ShieldCheck, User, Footprints, Radar } from "lucide-react";
 
-import { apiFetch, extractUser } from "../lib/api";
+import { apiFetch, extractUser, extractToken } from "../lib/api";
 import { useAuth } from "../auth/AuthContext";
 import ThemeToggle from "../components/ThemeToggle";
 
@@ -65,7 +65,7 @@ function Register() {
       const userData = extractUser(response);
 
       if (userData) {
-        login(userData);
+        login(userData, extractToken(response));
         navigate(userData.role === "admin" ? "/admin" : "/dashboard");
       } else {
         navigate("/login");

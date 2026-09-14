@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react"
-import { apiFetch, extractUser } from "../lib/api"
+import { apiFetch, extractUser, setAuthToken, clearAuthToken } from "../lib/api"
 
 const AuthContext = createContext(null)
 
@@ -28,7 +28,8 @@ export function AuthProvider({ children }) {
         restoreSession()
     }, [])
 
-    function login(userData) {
+    function login(userData, token) {
+        setAuthToken(token)
         setUser(userData)
     }
 
@@ -36,6 +37,7 @@ export function AuthProvider({ children }) {
         try {
             await apiFetch("/auth/logout", { method: "POST" })
         } finally {
+            clearAuthToken()
             setUser(null)
         }
     }

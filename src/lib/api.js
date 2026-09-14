@@ -1,9 +1,29 @@
 const BASE_URL = "https://1-community-watch-api.vercel.app/api/v1"
 
+// In-memory only (never persisted): falls back to Authorization: Bearer when
+// the browser won't retain the cross-site httpOnly cookie (third-party
+// cookie blocking, webviews, Safari ITP). The API issues this token
+// alongside the cookie on login/register for exactly this case.
+let authToken = null
+
+export function setAuthToken(token) {
+    authToken = token || null
+}
+
+export function clearAuthToken() {
+    authToken = null
+}
+
 export function extractUser(payload) {
     if (!payload || typeof payload !== "object") return null
 
     return payload.user ?? payload.data?.user ?? payload.data ?? null
+}
+
+export function extractToken(payload) {
+    if (!payload || typeof payload !== "object") return null
+
+    return payload.token ?? payload.data?.token ?? null
 }
 
 export async function apiFetch(path, options = {}) {
@@ -12,6 +32,7 @@ export async function apiFetch(path, options = {}) {
         credentials: "include",
         headers: {
             "Content-Type": "application/json",
+            ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
             ...options.headers,
         },
     })
